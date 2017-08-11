@@ -724,9 +724,7 @@ class auth_chain_b(auth_chain_a):
         # final_pos 总是分布在pos~(data_size_list2.len-1)之间
         if final_pos < pos + len(self.data_size_list2) - 1:
             return 0
-        # 有1/len(self.data_size_list2)的概率不满足上一个if  ?
-        # 理论上不会运行到此处，因此可以插入运行断言  ?
-        # assert False
+        # 有1/len(self.data_size_list2)的概率不满足上一个if
 
         if buf_size > 1300:
             return random.next() % 31
