@@ -866,7 +866,7 @@ class auth_chain_e(auth_chain_d):
 
 
 # auth_chain_f
-# when every connect create, generate size_list will different when every day or every custom time interval witch set in the config
+# when every connect create, generate size_list will different when every day or every custom time interval which set in the config
 class auth_chain_f(auth_chain_e):
     def __init__(self, method):
         super(auth_chain_e, self).__init__(method)
@@ -884,7 +884,7 @@ class auth_chain_f(auth_chain_e):
         except:
             self.key_change_interval = 60 * 60 * 24  # a day
         self.key_change_datetime_key = int(int(time.time()) / self.key_change_interval)
-        self.key_change_datetime_key_bytes = []
+        self.key_change_datetime_key_bytes = []  # big bit first list
         for i in range(7, -1, -1):  # big-ending compare to c
             self.key_change_datetime_key_bytes.append((self.key_change_datetime_key >> (8 * i)) & 0xFF)
         self.server_info.data.set_max_client(max_client)
@@ -895,9 +895,9 @@ class auth_chain_f(auth_chain_e):
             self.data_size_list0 = []
         random = xorshift128plus()
         # key xor with key_change_datetime_key
-        new_key = []
+        new_key = list(key)
         for i in range(0, 8):
-            new_key.append(key[i] ^ self.key_change_datetime_key_bytes[i])
+            new_key[i] ^= self.key_change_datetime_key_bytes[i]
         random.init_from_bin(new_key)
         # 补全数组长为12~24-1
         list_len = random.next() % (8 + 16) + (4 + 8)
