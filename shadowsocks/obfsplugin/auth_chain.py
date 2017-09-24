@@ -897,7 +897,7 @@ class auth_chain_f(auth_chain_e):
         # key xor with key_change_datetime_key
         new_key = list(key)
         for i in range(0, 8):
-            new_key[i] ^= self.key_change_datetime_key_bytes[i]
+            new_key[i] = ord(new_key[i]) ^ self.key_change_datetime_key_bytes[i]
         random.init_from_bin(new_key)
         # 补全数组长为12~24-1
         list_len = random.next() % (8 + 16) + (4 + 8)
