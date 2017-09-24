@@ -850,7 +850,7 @@ class auth_chain_d(auth_chain_b):
 
 class auth_chain_e(auth_chain_d):
     def __init__(self, method):
-        super(auth_chain_d, self).__init__(method)
+        super(auth_chain_e, self).__init__(method)
         self.salt = b"auth_chain_e"
         self.no_compatible_method = 'auth_chain_e'
 
@@ -869,7 +869,7 @@ class auth_chain_e(auth_chain_d):
 # when every connect create, generate size_list will different when every day or every custom time interval which set in the config
 class auth_chain_f(auth_chain_e):
     def __init__(self, method):
-        super(auth_chain_e, self).__init__(method)
+        super(auth_chain_f, self).__init__(method)
         self.salt = b"auth_chain_f"
         self.no_compatible_method = 'auth_chain_f'
 
