@@ -882,7 +882,7 @@ class auth_chain_f(auth_chain_e):
         try:
             self.key_change_interval = int(server_info.protocol_param.split('#')[1])  # config are in second
         except:
-            self.key_change_interval = 60 * 60 * 24  # a day
+            self.key_change_interval = 60 * 60 * 24  # a day by second
         self.key_change_datetime_key = int(int(time.time()) / self.key_change_interval)
         self.key_change_datetime_key_bytes = []  # big bit first list
         for i in range(7, -1, -1):  # big-ending compare to c
