@@ -895,14 +895,14 @@ class auth_chain_f(auth_chain_e):
             self.data_size_list0 = []
         random = xorshift128plus()
         # key xor with key_change_datetime_key
-        new_key = list(key)
+        new_key = bytearray(key)
         for i in range(0, 8):
-            new_key[i] = to_str(to_bytes(new_key[i]) ^ self.key_change_datetime_key_bytes[i])
+            new_key[i] ^= self.key_change_datetime_key_bytes[i]
         random.init_from_bin(new_key)
         # 补全数组长为12~24-1
         list_len = random.next() % (8 + 16) + (4 + 8)
         for i in range(0, list_len):
-            self.data_size_list0.append((int)(random.next() % 2340 % 2040 % 1440))
+            self.data_size_list0.append(int(random.next() % 2340 % 2040 % 1440))
         self.data_size_list0.sort()
         old_len = len(self.data_size_list0)
         self.check_and_patch_data_size(random)
