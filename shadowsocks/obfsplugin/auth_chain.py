@@ -60,12 +60,17 @@ def create_auth_chain_e(method):
     return auth_chain_e(method)
 
 
+def create_auth_chain_f(method):
+    return auth_chain_f(method)
+
+
 obfs_map = {
     'auth_chain_a': (create_auth_chain_a,),
     'auth_chain_b': (create_auth_chain_b,),
     'auth_chain_c': (create_auth_chain_c,),
     'auth_chain_d': (create_auth_chain_d,),
     'auth_chain_e': (create_auth_chain_e,),
+    'auth_chain_f': (create_auth_chain_f,),
 }
 
 
@@ -845,7 +850,7 @@ class auth_chain_d(auth_chain_b):
 
 class auth_chain_e(auth_chain_d):
     def __init__(self, method):
-        super(auth_chain_d, self).__init__(method)
+        super(auth_chain_e, self).__init__(method)
         self.salt = b"auth_chain_e"
         self.no_compatible_method = 'auth_chain_e'
 
@@ -858,3 +863,49 @@ class auth_chain_e(auth_chain_d):
         # use the mini size in the data_size_list0
         pos = bisect.bisect_left(self.data_size_list0, other_data_size)
         return self.data_size_list0[pos] - other_data_size
+
+
+# auth_chain_f
+# when every connect create, generate size_list will different when every day or every custom time interval which set in the config
+class auth_chain_f(auth_chain_e):
+    def __init__(self, method):
+        super(auth_chain_f, self).__init__(method)
+        self.salt = b"auth_chain_f"
+        self.no_compatible_method = 'auth_chain_f'
+
+    def set_server_info(self, server_info):
+        self.server_info = server_info
+        try:
+            max_client = int(server_info.protocol_param.split('#')[0])
+        except:
+            max_client = 64
+        try:
+            self.key_change_interval = int(server_info.protocol_param.split('#')[1])  # config are in second
+        except:
+            self.key_change_interval = 60 * 60 * 24  # a day by second
+        self.key_change_datetime_key = int(int(time.time()) / self.key_change_interval)
+        self.key_change_datetime_key_bytes = []  # big bit first list
+        for i in range(7, -1, -1):  # big-ending compare to c
+            self.key_change_datetime_key_bytes.append((self.key_change_datetime_key >> (8 * i)) & 0xFF)
+        self.server_info.data.set_max_client(max_client)
+        self.init_data_size(self.server_info.key)
+
+    def init_data_size(self, key):
+        if self.data_size_list0:
+            self.data_size_list0 = []
+        random = xorshift128plus()
+        # key xor with key_change_datetime_key
+        new_key = bytearray(key)
+        for i in range(0, 8):
+            new_key[i] ^= self.key_change_datetime_key_bytes[i]
+        random.init_from_bin(new_key)
+        # 补全数组长为12~24-1
+        list_len = random.next() % (8 + 16) + (4 + 8)
+        for i in range(0, list_len):
+            self.data_size_list0.append(int(random.next() % 2340 % 2040 % 1440))
+        self.data_size_list0.sort()
+        old_len = len(self.data_size_list0)
+        self.check_and_patch_data_size(random)
+        # if check_and_patch_data_size are work, re-sort again.
+        if old_len != len(self.data_size_list0):
+            self.data_size_list0.sort()
