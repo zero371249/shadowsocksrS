@@ -414,6 +414,9 @@ class auth_chain_a(auth_base):
                          self.server_info.data.local_client_id,
                          struct.pack('<I', self.server_info.data.connection_id)])
 
+    def on_recv_auth_data(self, utc_time):
+        pass
+
     def client_pre_encrypt(self, buf):
         ret = b''
         ogn_data_len = len(buf)
@@ -548,6 +551,7 @@ class auth_chain_a(auth_base):
                 logging.info('%s: auth fail, data %s' % (self.no_compatible_method, binascii.hexlify(out_buf)))
                 return self.not_match_return(self.recv_buf)
 
+            self.on_recv_auth_data(utc_time)
             self.encryptor = encrypt.Encryptor(
                 to_bytes(base64.b64encode(self.user_key)) + to_bytes(base64.b64encode(self.last_client_hash)), 'rc4')
             self.recv_buf = self.recv_buf[36:]
@@ -876,15 +880,17 @@ class auth_chain_f(auth_chain_e):
             max_client = int(server_info.protocol_param.split('#')[0])
         except:
             max_client = 64
+        self.server_info.data.set_max_client(max_client)
         try:
             self.key_change_interval = int(server_info.protocol_param.split('#')[1])  # config are in second
         except:
             self.key_change_interval = 60 * 60 * 24  # a day by second
-        self.key_change_datetime_key = int(int(time.time()) / self.key_change_interval)
+
+    def on_recv_auth_data(self, utc_time):
+        self.key_change_datetime_key = int(utc_time / self.key_change_interval)
         self.key_change_datetime_key_bytes = []  # big bit first list
         for i in range(7, -1, -1):  # big-ending compare to c
             self.key_change_datetime_key_bytes.append((self.key_change_datetime_key >> (8 * i)) & 0xFF)
-        self.server_info.data.set_max_client(max_client)
         self.init_data_size(self.server_info.key)
 
     def init_data_size(self, key):
@@ -893,9 +899,13 @@ class auth_chain_f(auth_chain_e):
         random = xorshift128plus()
         # key xor with key_change_datetime_key
         new_key = bytearray(key)
+        new_key_str = ''
         for i in range(0, 8):
             new_key[i] ^= self.key_change_datetime_key_bytes[i]
-        random.init_from_bin(new_key)
+            new_key_str += chr(new_key[i])
+        for i in range(8, len(new_key)):
+            new_key_str += chr(new_key[i])
+        random.init_from_bin(to_bytes(new_key_str))
         # 补全数组长为12~24-1
         list_len = random.next() % (8 + 16) + (4 + 8)
         for i in range(0, list_len):
