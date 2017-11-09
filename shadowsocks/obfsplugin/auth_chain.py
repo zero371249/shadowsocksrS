@@ -87,19 +87,20 @@ class xorshift128plus(object):
         y = self.v1
         self.v0 = y
         x ^= ((x & xorshift128plus.mov_mask) << 23)
-        x ^= (y ^ (x >> 17) ^ (y >> 26)) & xorshift128plus.max_int
+        x ^= (y ^ (x >> 17) ^ (y >> 26))
         self.v1 = x
         return (x + y) & xorshift128plus.max_int
 
     def init_from_bin(self, bin):
-        bin += b'\0' * 16
+        if len(bin) < 16:
+            bin += b'\0' * 16
         self.v0 = struct.unpack('<Q', bin[:8])[0]
         self.v1 = struct.unpack('<Q', bin[8:16])[0]
 
     def init_from_bin_len(self, bin, length):
-        bin += b'\0' * 16
-        bin = struct.pack('<H', length) + bin[2:]
-        self.v0 = struct.unpack('<Q', bin[:8])[0]
+        if len(bin) < 16:
+            bin += b'\0' * 16
+        self.v0 = struct.unpack('<Q', struct.pack('<H', length) + bin[2:8])[0]
         self.v1 = struct.unpack('<Q', bin[8:16])[0]
 
         for i in range(4):
