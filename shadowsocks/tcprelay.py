@@ -95,8 +95,9 @@ TCP_MSS = NETWORK_MTU - 40
 BUF_SIZE = 32 * 1024
 UDP_MAX_BUF_SIZE = 65536
 
+
 class SpeedTester(object):
-    def __init__(self, max_speed = 0):
+    def __init__(self, max_speed=0):
         self.max_speed = max_speed * 1024
         self.last_time = time.time()
         self.sum_len = 0
@@ -122,6 +123,7 @@ class SpeedTester(object):
             self.last_time = cut_t
             return self.sum_len >= self.max_speed
         return False
+
 
 class TCPRelayHandler(object):
     def __init__(self, server, fd_to_handlers, loop, local_sock, config,
@@ -954,7 +956,7 @@ class TCPRelayHandler(object):
                 self._recv_pack_id += 1
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
-                    (errno.ETIMEDOUT, errno.EAGAIN, errno.EWOULDBLOCK, 10035): #errno.WSAEWOULDBLOCK
+                    (errno.ETIMEDOUT, errno.EAGAIN, errno.EWOULDBLOCK, 10035):  # errno.WSAEWOULDBLOCK
                 return
         if not data:
             self.destroy()
@@ -1175,6 +1177,7 @@ class TCPRelayHandler(object):
         #gc.collect()
         #logging.debug("gc %s" % (gc.garbage,))
 
+
 class TCPRelay(object):
     def __init__(self, config, dns_resolver, is_local, stat_callback=None, stat_counter=None):
         self._config = config
@@ -1200,8 +1203,7 @@ class TCPRelay(object):
             common.connect_log = logging.info
 
         self._timeout = config['timeout']
-        self._timeout_cache = lru_cache.LRUCache(timeout=self._timeout,
-                                         close_callback=self._close_tcp_client)
+        self._timeout_cache = lru_cache.LRUCache(timeout=self._timeout, close_callback=self._close_tcp_client)
 
         if is_local:
             listen_addr = config['local_address']
@@ -1277,7 +1279,7 @@ class TCPRelay(object):
                             self.del_user(uid)
                         else:
                             passwd = items[1]
-                            self.add_user(uid, {'password':passwd})
+                            self.add_user(uid, {'password': passwd})
 
     def _update_user(self, id, passwd):
         uid = struct.pack('<I', id)
