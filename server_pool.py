@@ -117,7 +117,7 @@ class ServerPool(object):
 			else:
 				a_config = self.config.copy()
 				a_config.update(user_config)
-				if len(a_config['server_ipv6']) > 2 and a_config['server_ipv6'][0] == "[" and a_config['server_ipv6'][-1] == "]":
+				if len(a_config['server_ipv6']) > 2 and a_config['server_ipv6'][0] == b"[" and a_config['server_ipv6'][-1] == b"]":
 					a_config['server_ipv6'] = a_config['server_ipv6'][1:-1]
 				a_config['server'] = common.to_str(a_config['server_ipv6'])
 				a_config['server_port'] = port
