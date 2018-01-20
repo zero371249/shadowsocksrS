@@ -854,6 +854,7 @@ class auth_chain_e(auth_chain_d):
         self.no_compatible_method = 'auth_chain_e'
 
     def rnd_data_len(self, buf_size, last_hash, random):
+        random.init_from_bin_len(last_hash, buf_size)
         other_data_size = buf_size + self.server_info.overhead
         # if other_data_size > the bigest item in data_size_list0, not padding any data
         if other_data_size >= self.data_size_list0[-1]:
