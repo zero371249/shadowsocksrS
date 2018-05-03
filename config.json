@@ -19,7 +19,7 @@
     "timeout": 120,
     "udp_timeout": 60,
     "dns_ipv6": false,
-    "connect_verbose_info": 0,
+    "connect_verbose_info": 1,
     "redirect": "",
     "fast_open": false
 }
